@@ -32,3 +32,5 @@ coverage/
 
 # dotenv environment variables file
 .env
+client.js
+

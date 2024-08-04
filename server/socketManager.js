@@ -9,13 +9,15 @@ module.exports = (io) => {
     console.log(`Client connected: ${socket.id}`);
 
     // When a client joins a room
-    socket.on('joinRoom', async (roomId) => {
-      if (!mongoose.Types.ObjectId.isValid(roomId)) {
-        console.error(`Invalid roomId: ${roomId}`);
-        socket.emit('error', 'Invalid room ID');
-        return;
-      }
+    // socket.on('joinRoom', async (roomId) => {
+    //   if (!mongoose.Types.ObjectId.isValid(roomId)) {
+    //     console.error(`Invalid roomId: ${roomId}`);
+    //     socket.emit('error', 'Invalid room ID');
+    //     return;
+    //   }
 
+    //   socket.join(roomId);
+        socket.on('joinRoom', ({ roomId }) => {
       socket.join(roomId);
 
       if (!roomParticipants.has(roomId)) {
@@ -34,20 +36,31 @@ module.exports = (io) => {
     });
 
     // When a client sends a code update
-    socket.on('updateCode', async ({ roomId, updatedCode }) => {
-      if (!mongoose.Types.ObjectId.isValid(roomId)) {
-        console.error(`Invalid roomId: ${roomId}`);
-        socket.emit('error', 'Invalid room ID');
-        return;
-      }
-
+    // socket.on('updateCode', async ({ roomId, updatedCode }) => {
+    //   if (!mongoose.Types.ObjectId.isValid(roomId)) {
+    //     console.error(`Invalid roomId: ${roomId}`);
+    //     socket.emit('error', 'Invalid room ID');
+    //     return;
+    //   }
+        //   const room = roomParticipants.get(roomId);
+    //   if (room && (room.students.has(socket.id) || room.mentor === socket.id)) {
+    //     // Broadcast the updated code to other participants in the room
+    //     socket.to(roomId).emit('codeUpdated', updatedCode);
+    //     try {
+    //       // Update the code block in the database
+    //       await CodeBlock.findByIdAndUpdate(roomId, { code: updatedCode });
+    //       console.log(`Code updated in room ${roomId}`);
+    //     } catch (error) {
+    //       console.error('Failed to update code block:', error);
+    //     }
+    //   }
+    // });
+    socket.on('changeCode', async ({ roomId, newCode }) => {
       const room = roomParticipants.get(roomId);
-      if (room && (room.students.has(socket.id) || room.mentor === socket.id)) {
-        // Broadcast the updated code to other participants in the room
-        socket.to(roomId).emit('codeUpdated', updatedCode);
+      if (room && room.students.has(socket.id)) { // Ensure only students can update the code
+        socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
         try {
-          // Update the code block in the database
-          await CodeBlock.findByIdAndUpdate(roomId, { code: updatedCode });
+          await CodeBlock.findByIdAndUpdate(roomId, { code: newCode });
           console.log(`Code updated in room ${roomId}`);
         } catch (error) {
           console.error('Failed to update code block:', error);
@@ -55,21 +68,41 @@ module.exports = (io) => {
       }
     });
 
-    // When a client disconnects
-    socket.on('disconnect', () => {
-      roomParticipants.forEach((room, roomId) => {
-        if (room.mentor === socket.id) {
-          room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
-        } else {
-          room.students.delete(socket.id); // Remove the student
-        }
 
-        // Delete the room if it no longer has any participants
-        if (!room.mentor && room.students.size === 0) {
-          roomParticipants.delete(roomId);
-        }
+
+
+//     // When a client disconnects
+//     socket.on('disconnect', () => {
+//       roomParticipants.forEach((room, roomId) => {
+//         if (room.mentor === socket.id) {
+//           room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
+//         } else {
+//           room.students.delete(socket.id); // Remove the student
+//         }
+
+//         // Delete the room if it no longer has any participants
+//         if (!room.mentor && room.students.size === 0) {
+//           roomParticipants.delete(roomId);
+//         }
+//       });
+//       console.log(`Client disconnected: ${socket.id}`);
+//     });
+//   });
+// };
+socket.on('disconnect', () => {
+  roomParticipants.forEach((room, roomId) => {
+    if (room.mentor === socket.id) {
+      room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
+      io.in(roomId).emit('mentorLeft'); // Notify all students that the mentor left
+      room.students.forEach(studentId => {
+        io.sockets.sockets.get(studentId)?.leave(roomId);
       });
-      console.log(`Client disconnected: ${socket.id}`);
-    });
+      roomParticipants.delete(roomId); // Delete the room if it has no participants
+    } else {
+      room.students.delete(socket.id); // Remove the student
+    }
   });
+  console.log(`Client disconnected: ${socket.id}`);
+});
+});
 };

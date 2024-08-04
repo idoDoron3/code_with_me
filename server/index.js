@@ -11,7 +11,19 @@ class AppServer {
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
-    this.io = socketIo(this.server);
+    // // this.io = socketIo(this.server, {
+    // //   cors: {
+    // //     origin: "http://localhost:3000",
+    // //     methods: ["GET", "POST"]
+    // //   }
+    // // });
+    // this.io = socketIo(this.server); // Initialize socket.io without specific CORS settings
+    this.io = socketIo(this.server, {
+      cors: {
+        origin: '*', // Allow all origins
+        methods: ["GET", "POST"]
+      }
+    });
     this.connectToDatabase();
     this.setupMiddleware();
     this.setupRoutes();

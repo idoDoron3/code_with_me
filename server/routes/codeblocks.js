@@ -24,17 +24,17 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create a new code block
-router.post('/', async (req, res) => {
-  const { title, content, solution } = req.body;
-  const newCodeBlock = new CodeBlock({ title, content, solution });
-  try {
-    const savedCodeBlock = await newCodeBlock.save();
-    res.status(201).json(savedCodeBlock);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
+// // Create a new code block
+// router.post('/', async (req, res) => {
+//   const { title, content, solution } = req.body;
+//   const newCodeBlock = new CodeBlock({ title, content, solution });
+//   try {
+//     const savedCodeBlock = await newCodeBlock.save();
+//     res.status(201).json(savedCodeBlock);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// });
 
 // Update a code block
 router.put('/:id', async (req, res) => {
@@ -48,14 +48,14 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a code block
-router.delete('/:id', async (req, res) => {
-  try {
-    const deletedCodeBlock = await CodeBlock.findByIdAndDelete(req.params.id);
-    if (!deletedCodeBlock) return res.status(404).json({ message: 'CodeBlock not found' });
-    res.json({ message: 'CodeBlock deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+// router.delete('/:id', async (req, res) => {
+//   try {
+//     const deletedCodeBlock = await CodeBlock.findByIdAndDelete(req.params.id);
+//     if (!deletedCodeBlock) return res.status(404).json({ message: 'CodeBlock not found' });
+//     res.json({ message: 'CodeBlock deleted' });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
 
 module.exports = router;

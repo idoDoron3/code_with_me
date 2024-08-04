@@ -1,0 +1,13 @@
+.lobby-page {
+    margin: 20px;
+  }
+  
+  .lobby-page h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .lobby-page .card {
+    margin: 10px 0;
+  }
+  
