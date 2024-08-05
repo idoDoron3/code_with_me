@@ -145,6 +145,18 @@ const CodeBlockPage = () => {
       sendCodeUpdate(id, value);
     }
   };
+///new
+  const handleSubmit = () => {
+   if (role === 'student') {
+     sendCodeUpdate(id, code, true); // Pass an additional parameter to indicate submission
+    }
+  };
+////new
+  const handleBackToLobby = () => {
+    navigate('/');
+  };
+
+
 
   if (!codeBlock) return <div>Loading...</div>;
 
@@ -157,6 +169,10 @@ const CodeBlockPage = () => {
         editable={role === 'student'} // Make editor read-only for mentor
         onChange={handleCodeChange}
       />
+      <div className="button-container">
+        <button onClick={handleSubmit}>Submit</button>
+        <button onClick={handleBackToLobby}>Back to Lobby</button>
+      </div>
     </div>
   );
 };

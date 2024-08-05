@@ -51,19 +51,41 @@ module.exports = (io) => {
     //////////////////////////////////////////////////////
     // });
 
-    socket.on('changeCode', async ({ roomId, newCode }) => {
+    // socket.on('changeCode', async ({ roomId, newCode }) => {
+    //   const room = roomParticipants.get(roomId);
+    //   if (room && room.students.has(socket.id)) { // Ensure only students can update the code
+    //     socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
+    //     try {
+    //       await CodeBlock.findByIdAndUpdate(roomId, { code: newCode });
+    //       console.log(`Code updated in room ${roomId}`);
+    //     } catch (error) {
+    //       console.error('Failed to update code block:', error);
+    //     }
+      
+    //   }
+    // });
+    socket.on('changeCode', async ({ roomId, newCode, isSubmit }) => {
       const room = roomParticipants.get(roomId);
-      if (room && room.students.has(socket.id)) { // Ensure only students can update the code
-        socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
-        try {
-          await CodeBlock.findByIdAndUpdate(roomId, { code: newCode });
-          console.log(`Code updated in room ${roomId}`);
-        } catch (error) {
-          console.error('Failed to update code block:', error);
+      if (room && room.students.has(socket.id)) {
+        socket.to(roomId).emit('codeUpdated', newCode);
+        if (isSubmit) {
+          try {
+            const codeBlock = await CodeBlock.findById(roomId);
+            if (codeBlock && newCode.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '').trim() === codeBlock.solution.trim()) {
+              io.to(roomId).emit('solutionMatched');
+              setTimeout(() => {
+                io.to(roomId).emit('redirectLobby');
+                roomParticipants.delete(roomId);
+              }, 3000);
+            } else {
+              socket.emit('solutionIncorrect'); // Inform the student that the solution is incorrect
+            }
+          } catch (error) {
+            console.error('Failed to update code block:', error);
+          }
         }
       }
     });
-
 
 
 

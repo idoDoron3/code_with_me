@@ -130,18 +130,18 @@ export const initializeSocket = (roomId) => {
       console.log('WebSocket disconnected:', socketConnection.id, 'Reason:', reason);
     });
 
-    //////
-    // Listen for initial code from the server
-    socketConnection.on('initialCode', (initialCode) => {
-      if (typeof initialCode === 'string') {
-        console.log('Received initial code:', initialCode);
-        // setCode(initialCode); // Ensure the code is set correctly
+    // //////
+    // // Listen for initial code from the server
+    // socketConnection.on('initialCode', (initialCode) => {
+    //   if (typeof initialCode === 'string') {
+    //     console.log('Received initial code:', initialCode);
+    //     // setCode(initialCode); // Ensure the code is set correctly
 
-      } else {
-        console.error('Received initial code is not a string:', initialCode);
-      }
-    });
-    /////////
+    //   } else {
+    //     console.error('Received initial code is not a string:', initialCode);
+    //   }
+    // });
+    // /////////
   }
 };
 
@@ -167,9 +167,17 @@ export const listenForCodeUpdates = (callback) => {
 };
 
 // Emits a code update message to the WebSocket server
-export const sendCodeUpdate = (roomId, code) => {
+// export const sendCodeUpdate = (roomId, code) => {
+//   if (socketConnection) {
+//     socketConnection.emit('changeCode', { roomId, newCode: code }, (ack) => {
+//       console.log('Code update acknowledged by server:', ack);
+//     });
+//   }
+// };
+// Emits a code update message to the WebSocket server
+export const sendCodeUpdate = (roomId, code, isSubmit = false) => {
   if (socketConnection) {
-    socketConnection.emit('changeCode', { roomId, newCode: code }, (ack) => {
+    socketConnection.emit('changeCode', { roomId, newCode: code, isSubmit }, (ack) => {
       console.log('Code update acknowledged by server:', ack);
     });
   }
