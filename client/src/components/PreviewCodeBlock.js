@@ -1,22 +1,17 @@
-// import React from 'react';
-// import { Card } from 'react-bootstrap';
-
-// const PreviewCodeBlock = ({ title, onSelect }) => {
-//   return (
-//     <Card.Title className="text-center" onClick={onSelect} style={{ cursor: 'pointer' }}>
-//       {title}
-//     </Card.Title>
-//   );
-// };
-
-// export default PreviewCodeBlock;
-// client/src/components/PreviewCodeBlock.js
 import React from 'react';
-import { Card } from 'react-bootstrap';
+import { Card, Button } from 'react-bootstrap';
+import './PreviewCodeBlock.css';
 
-const PreviewCodeBlock = ({ title }) => {
+const PreviewCodeBlock = ({ title, onClick }) => {
   return (
-    <Card.Title className="text-center">{title}</Card.Title>
+    <Card className="preview-code-block">
+      <Card.Body>
+        <Card.Title>{title}</Card.Title>
+        <Button variant="primary" onClick={onClick}>
+          Open
+        </Button>
+      </Card.Body>
+    </Card>
   );
 };
 

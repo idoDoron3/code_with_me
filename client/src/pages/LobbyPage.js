@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../network/api';
-import { initializeSocket, closeSocket } from '../network/websocket';
 import ListCodeBlock from '../components/ListCodeBlock';
+import './LobbyPage.css';
+
 
 const LobbyPage = () => {
   const [codeBlocks, setCodeBlocks] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    initializeSocket();
-
     const fetchCodeBlocks = async () => {
       try {
         const response = await api.getCodeBlocks();
@@ -23,7 +22,6 @@ const LobbyPage = () => {
     fetchCodeBlocks();
 
     return () => {
-      closeSocket();
     };
   }, []);
 
@@ -32,10 +30,10 @@ const LobbyPage = () => {
   };//TODO: change to relevant dada 2 cases
 
   return (
-    <div>
-      <h1>Lobby</h1>
-      <ListCodeBlock codeBlocks={codeBlocks} onCodeBlockClick={handleCodeBlockClick} />
-    </div>
+    <div className="lobby-page">
+    <h1 className="lobby-title">JavaScript with Tom!</h1>
+    <ListCodeBlock codeBlocks={codeBlocks} onCodeBlockClick={handleCodeBlockClick} />
+  </div>
   );
 };
 

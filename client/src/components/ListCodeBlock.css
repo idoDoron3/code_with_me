@@ -1,0 +1,16 @@
+/* ListCodeBlock.css */
+
+.list-code-block {
+  display: flex;
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  gap: 30px; /* Adjust the gap between cards */
+  padding: 80px;
+  background-color: transparent; /* Remove any background color */
+}
+
+.code-block-card {
+  flex: 0 0 auto; /* Prevent the flex item from shrinking or growing */
+  width: 300px; /* Adjust the width as needed */
+  border:10px;
+}

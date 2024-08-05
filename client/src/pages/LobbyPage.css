@@ -1,13 +1,26 @@
+/* LobbyPage.css */
+
 .lobby-page {
-    margin: 20px;
-  }
-  
-  .lobby-page h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .lobby-page .card {
-    margin: 10px 0;
-  }
-  
+  text-align: center;
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+}
+
+.lobby-title {
+  font-size: 3rem;
+  color: #000; /* Title color set to black */
+  margin-top: 40px;
+}
+
+.code-block-list {
+  display: flex;
+  /* flex-wrap: wrap; */
+  justify-content: center;
+  gap: 40px;
+  margin-top: 250px;
+}
+
+body {
+  background: url('../background.jpg') no-repeat center center fixed;
+  background-size: cover;
+}

@@ -4,8 +4,16 @@ import api from '../network/api';
 import CodeMirror from '@uiw/react-codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { javascript } from '@codemirror/lang-javascript';
+import { Button, Container, Row, Col } from 'react-bootstrap';
 import './CodeBlockPage.css';
-import { listenForCodeUpdates, sendCodeUpdate, initializeSocket, closeSocket, listenForRoleAssignment, listenForMentorLeft, listenForRedirectLobby, listenForSolutionMatched, listenForSolutionFailed, listenForClientCount } from '../network/websocket';
+import { listenForCodeUpdates,
+   sendCodeUpdate,
+   listenForTitleUpdates,
+    initializeSocket,
+     closeSocket,
+      listenForRoleAssignment,
+       listenForMentorLeft,
+        listenForSolutionMatched, listenForSolutionFailed, listenForClientCount, emitBackToLobby  } from '../network/websocket';
 import SuccessModal from '../components/SuccessModal';
 
 
@@ -14,44 +22,34 @@ const CodeBlockPage = () => {
   const navigate = useNavigate();
   const [codeBlock, setCodeBlock] = useState(null);
   const [code, setCode] = useState('');
+  const [title, setTitle] = useState('');
   const [role, setRole] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [clientCount, setClientCount] = useState(0);
-
-
-
-  useEffect(() => {
-    const loadCodeBlock = async () => {
-      try {
-        const response = await api.getCodeBlock(id);
-        console.log('API response:', response.data);
-
-        setCodeBlock(response.data);
-        setCode(response.data.content);
-      } catch (error) {
-        console.error('Failed to load code block:', error);
-      }
-    };
-
-    loadCodeBlock();
-  }, [id]);
+//////////
+  const getCurrentCode = () => code; // Function to get the current code
 
   useEffect(() => {
-    initializeSocket(id);
+    initializeSocket(id, setCode, getCurrentCode);
 
     listenForRoleAssignment((assignedRole) => {
       setRole(assignedRole);
     });
 
     listenForCodeUpdates((newCode) => {
+      if (!codeBlock) {
+        setCodeBlock(true);
+      }
       setCode(newCode);
     });
 
+    listenForTitleUpdates((newTitle) => {
+      setTitle(newTitle);
+    });
+
     listenForMentorLeft(() => {
-      if (role === 'student') {
-        alert('Mentor has left the room. Returning to lobby.');
-        navigate('/');
-      }
+      alert('Mentor has left the room. Returning to lobby.');
+      navigate('/');
     });
 
     listenForSolutionFailed(() => {
@@ -66,9 +64,9 @@ const CodeBlockPage = () => {
     });
  
 
-    listenForRedirectLobby(() => {
-      navigate('/');
-    });
+    // listenForRedirectLobby(() => {
+    //   navigate('/');
+    // });
 
 
     listenForClientCount((count) => {
@@ -78,7 +76,7 @@ const CodeBlockPage = () => {
     return () => {
       closeSocket();
     };
-  }, [id, role, navigate]);
+  }, [id]);
 
   const handleCodeChange = (value) => {
     if (role === 'student') {
@@ -94,29 +92,46 @@ const CodeBlockPage = () => {
   };
 
   const handleBackToLobby = () => {
+    emitBackToLobby(id, role);
     navigate('/');
   };
 
+  window.addEventListener('beforeunload', (event) => {
+    emitBackToLobby(id, role);
+  });
+
   if (!codeBlock) return <div>Loading...</div>;
 
-  return (
-    <div className="code-block-page">
-      <h1>{codeBlock.title}</h1>
-      <CodeMirror
-        value={code}
-        extensions={[javascript({ jsx: true }), oneDark]}
-        editable={role === 'student'} // Make editor read-only for mentor
-        onChange={handleCodeChange}
-      />
-      <div className="button-container">
-        {role === 'student' && <button onClick={handleSubmit}>Submit</button>}
-        <button onClick={handleBackToLobby}>Back to Lobby</button>
-      </div>
-      <SuccessModal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} />
-      <div className="role-indicator">Role: {role}</div>
-      <div className="client-count">Clients Connected: {clientCount}</div>
-    </div>
-  );
+return (
+  <Container className="code-block-page">
+    <Row>
+      <Col className="text-center">
+        <h1 className="code-block-title">{title}</h1>
+      </Col>
+    </Row>
+    <Row>
+      <Col>
+        <CodeMirror
+          value={code}
+          extensions={[javascript({ jsx: true }), oneDark]}
+          editable={role === 'student'} // Make editor read-only for mentor
+          onChange={handleCodeChange}
+          className="code-editor"
+        />
+      </Col>
+    </Row>
+    <Row className="button-row">
+      <Col>
+        <div className="button-container">
+          {role === 'student' && <Button onClick={handleSubmit} variant="primary">Submit</Button>}
+          <Button onClick={handleBackToLobby} variant="secondary">Back to Lobby</Button>
+        </div>
+      </Col>
+    </Row>
+    <SuccessModal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} />
+    <div className="role-indicator">Role: {role}</div>
+    <div className="client-count">Clients Connected: {clientCount}</div>
+  </Container>
+);
 };
-
 export default CodeBlockPage;

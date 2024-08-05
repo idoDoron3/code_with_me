@@ -1,9 +1,78 @@
+/* .code-block-page {
+  position: relative;
+}
+
+.button-container {
+  display: flex;
+  gap: 0px;
+  margin-top: 10px;
+}
+
+.role-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.client-count {
+  position: absolute;
+  top: 30px;
+  right: 10px;
+  font-size: 14px;
+  font-weight: bold;
+} */
+/* CodeBlockPage.css */
+
+/* CodeBlockPage.css */
+
 .code-block-page {
-    margin: 20px;
-  }
-  
-  .code-block-page h1 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
+  /* background-image: url('path_to_your_background_image.jpg'); Use the same background image as the lobby */
+  background-size: cover;
+  background-position: center;
+  padding: 60px;
+  border-radius: 10px;
+}
+
+.code-block-title {
+  font-size: 58px; /* Increase the font size */
+  color: rgb(17, 16, 16); /* Change to your preferred color */
+  margin-bottom: 60px;
+}
+
+.code-editor {
+  background-color: rgba(0, 0, 0, 0.8); /* Make the editor background slightly transparent */
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  font-size: 20px; /* Increase the font size */
+}
+
+.button-row {
+  margin-top: 30px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.custom-button {
+  font-size: 25px; /* Increase the font size */
+  padding: 20px 40px; /* Increase the padding */
+}
+
+.role-indicator, .client-count {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  font-size: 24px; /* Increase the font size */
+  font-weight: bold;
+  color: rgb(12, 12, 12); /* Change to your preferred color */
+}
+
+.client-count {
+  top: 80px; /* Adjust positioning for better spacing */
+}
+

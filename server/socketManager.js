@@ -4,10 +4,9 @@ const mongoose = require('mongoose');
 module.exports = (io) => {
   // A map to store the participants of each room
   const roomParticipants = new Map();
+  var serverCurrentCode = new Map();
 
   io.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.id}`);
-
 
     const updateClientCount = (roomId) => {
       const room = roomParticipants.get(roomId);
@@ -18,23 +17,27 @@ module.exports = (io) => {
         io.to(roomId).emit('clientCount', clientCount);
       }
     };
-      // socket.on('joinRoom', ({ roomId }) => {
+
     socket.on('joinRoom', async ({ roomId }) => {
       socket.join(roomId);
 
       if (!roomParticipants.has(roomId)) {
         // If the room does not exist, create it with the current socket as the mentor
-        roomParticipants.set(roomId, { mentor: socket.id, students: new Set() });
+        roomParticipants.set(roomId, { mentor: socket.id, students: new Set(), title: "" });
+
+        // Fetch and send the initial code block to the mentor
+        try {
+          const codeBlock = await CodeBlock.findById(roomId);
+          if (codeBlock) {
+            serverCurrentCode.set(roomId, codeBlock.content);
+            roomParticipants.get(roomId).title = codeBlock.title;
+          }
+        } catch (error) {
+          console.error('Failed to load code block:', error);
+        }
       } else {
         // If the room exists, add the socket as a student
         roomParticipants.get(roomId).students.add(socket.id);
-
-         // Notify the new student with the current code/////////////////////////////////////////
-         const mentorId = roomParticipants.get(roomId).mentor;
-         if (mentorId) {
-           io.to(mentorId).emit('requestCurrentCode', socket.id);
-         }
-         ////////////////////////////////////////////////////////
       }
 
       // Determine the role of the socket (mentor or student) and notify the client
@@ -43,59 +46,30 @@ module.exports = (io) => {
       updateClientCount(roomId);
 
       console.log(`Client ${socket.id} joined room ${roomId} as ${role}`);
-
-      /////////////////////////////////////////
-      // Fetch and send the initial code block to the newly joined client
-      try {
-        const codeBlock = await CodeBlock.findById(roomId);
-        if (codeBlock) {
-          socket.emit('initialCode', codeBlock.content);
-        }
-      } catch (error) {
-        console.error('Failed to load code block:', error);
-      }
+      io.to(socket.id).emit('titleUpdated', roomParticipants.get(roomId).title);
+      io.to(socket.id).emit('codeUpdated', serverCurrentCode.get(roomId));
     });
 
     socket.on('sendCurrentCode', ({ studentId, currentCode }) => {
       io.to(studentId).emit('currentCode', currentCode);
     });
-    //////////////////////////////////////////////////////
-    // });
 
-    // socket.on('changeCode', async ({ roomId, newCode }) => {
-    //   const room = roomParticipants.get(roomId);
-    //   if (room && room.students.has(socket.id)) { // Ensure only students can update the code
-    //     socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
-    //     try {
-    //       await CodeBlock.findByIdAndUpdate(roomId, { code: newCode });
-    //       console.log(`Code updated in room ${roomId}`);
-    //     } catch (error) {
-    //       console.error('Failed to update code block:', error);
-    //     }
-      
-    //   }
-    // });
 
     socket.on('changeCode', async ({ roomId, newCode, isSubmit }) => {
+      serverCurrentCode.set(roomId, newCode);
       const room = roomParticipants.get(roomId);
       if (room && room.students.has(socket.id)) { // Ensure only students can update the code
         socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
         if (isSubmit) {
           try {
             const codeBlock = await CodeBlock.findById(roomId);
-
             const cleanCode = (code) => {
               return code.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '') // Remove comments
                 .replace(/\s+/g, '') // Remove all whitespace (spaces, tabs, newlines)
                 .trim();
             };
-
             const cleanedNewCode = cleanCode(newCode);
             const cleanedSolution = cleanCode(codeBlock.solution);
-
-            console.log('Cleaned New Code:', cleanedNewCode);
-            console.log('Cleaned Solution:', cleanedSolution);
-
 
             if (cleanedNewCode === cleanedSolution) {
               io.to(roomId).emit('solutionMatched');
@@ -112,53 +86,25 @@ module.exports = (io) => {
         }
       }
     });
-    
 
+// When a client disconnects
 
-
-//     // When a client disconnects
-socket.on('disconnect', () => {
-  let roomIdToUpdate = null;
-  roomParticipants.forEach((room, roomId) => {
-    if (room.mentor === socket.id) {
-      room.mentor = null;
-      io.in(roomId).emit('mentorLeft');
+socket.on('backToLobby', (backToLobby) => {
+  const room = roomParticipants.get(backToLobby.roomId);
+  if (room) {
+    if (backToLobby.role === "mentor") {
       room.students.forEach(studentId => {
-        io.sockets.sockets.get(studentId)?.leave(roomId);
+        io.to(studentId).emit('mentorLeft');
       });
-      roomParticipants.delete(roomId);
-      roomIdToUpdate = roomId;
-    } else if (room.students.delete(socket.id)) {
-      roomIdToUpdate = roomId;
+      roomParticipants.delete(backToLobby.roomId);
+      serverCurrentCode.delete(backToLobby.roomId);
+    } else {
+      room.students.delete(socket.id);
+      io.to(backToLobby.roomId).emit('clientCount', room.students.size +1);
     }
-  });
-
-  if (roomIdToUpdate) {
-    updateClientCount(roomIdToUpdate);
   }
-
-  console.log(`Client disconnected: ${socket.id}`);
 });
+
+
 });
 };
-// socket.on('disconnect', () => {
-//   roomParticipants.forEach((room, roomId) => {
-//     if (room.mentor === socket.id) {
-//       room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
-//       io.in(roomId).emit('mentorLeft'); // Notify all students that the mentor left
-//       room.students.forEach(studentId => {
-//         io.sockets.sockets.get(studentId)?.leave(roomId);
-//       });
-//       roomParticipants.delete(roomId); // Delete the room if it has no participants
-//     } else {
-//       room.students.delete(socket.id); // Remove the student
-//     }
-// });
-
-//   if (roomIdToUpdate) {
-//     updateClientCount(roomIdToUpdate);
-//   }
-//   console.log(`Client disconnected: ${socket.id}`);
-// });
-// });
-// };
