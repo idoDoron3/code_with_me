@@ -5,7 +5,9 @@ import CodeMirror from '@uiw/react-codemirror';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { javascript } from '@codemirror/lang-javascript';
 import './CodeBlockPage.css';
-import { listenForCodeUpdates, sendCodeUpdate, initializeSocket, closeSocket, listenForRoleAssignment, listenForMentorLeft, listenForSolutionFailed, listenForSolutionMatched, listenForRedirectLobby } from '../network/websocket';
+import { listenForCodeUpdates, sendCodeUpdate, initializeSocket, closeSocket, listenForRoleAssignment, listenForMentorLeft, listenForRedirectLobby, listenForSolutionMatched, listenForSolutionFailed, listenForClientCount } from '../network/websocket';
+import SuccessModal from '../components/SuccessModal';
+
 
 const CodeBlockPage = () => {
   const { id } = useParams();
@@ -13,6 +15,10 @@ const CodeBlockPage = () => {
   const [codeBlock, setCodeBlock] = useState(null);
   const [code, setCode] = useState('');
   const [role, setRole] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [clientCount, setClientCount] = useState(0);
+
+
 
   useEffect(() => {
     const loadCodeBlock = async () => {
@@ -53,11 +59,20 @@ const CodeBlockPage = () => {
     });
 
     listenForSolutionMatched(() => {
-      alert('Well done!');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        navigate('/');
+      }, 3000); // 3 seconds delay before redirect
     });
+ 
 
     listenForRedirectLobby(() => {
       navigate('/');
+    });
+
+
+    listenForClientCount((count) => {
+      setClientCount(count);
     });
 
     return () => {
@@ -97,6 +112,9 @@ const CodeBlockPage = () => {
         {role === 'student' && <button onClick={handleSubmit}>Submit</button>}
         <button onClick={handleBackToLobby}>Back to Lobby</button>
       </div>
+      <SuccessModal show={showSuccessModal} onHide={() => setShowSuccessModal(false)} />
+      <div className="role-indicator">Role: {role}</div>
+      <div className="client-count">Clients Connected: {clientCount}</div>
     </div>
   );
 };

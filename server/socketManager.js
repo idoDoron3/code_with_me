@@ -8,6 +8,16 @@ module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log(`Client connected: ${socket.id}`);
 
+
+    const updateClientCount = (roomId) => {
+      const room = roomParticipants.get(roomId);
+      if (room) {
+        const clientCount = 1 + room.students.size; // 1 for the mentor
+        console.log(`Emitting client count for room ${roomId}: ${clientCount}`);
+
+        io.to(roomId).emit('clientCount', clientCount);
+      }
+    };
       // socket.on('joinRoom', ({ roomId }) => {
     socket.on('joinRoom', async ({ roomId }) => {
       socket.join(roomId);
@@ -30,6 +40,7 @@ module.exports = (io) => {
       // Determine the role of the socket (mentor or student) and notify the client
       const role = roomParticipants.get(roomId).mentor === socket.id ? 'mentor' : 'student';
       socket.emit('assignedRole', role);
+      updateClientCount(roomId);
 
       console.log(`Client ${socket.id} joined room ${roomId} as ${role}`);
 
@@ -106,21 +117,48 @@ module.exports = (io) => {
 
 
 //     // When a client disconnects
-
 socket.on('disconnect', () => {
+  let roomIdToUpdate = null;
   roomParticipants.forEach((room, roomId) => {
     if (room.mentor === socket.id) {
-      room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
-      io.in(roomId).emit('mentorLeft'); // Notify all students that the mentor left
+      room.mentor = null;
+      io.in(roomId).emit('mentorLeft');
       room.students.forEach(studentId => {
         io.sockets.sockets.get(studentId)?.leave(roomId);
       });
-      roomParticipants.delete(roomId); // Delete the room if it has no participants
-    } else {
-      room.students.delete(socket.id); // Remove the student
+      roomParticipants.delete(roomId);
+      roomIdToUpdate = roomId;
+    } else if (room.students.delete(socket.id)) {
+      roomIdToUpdate = roomId;
     }
   });
+
+  if (roomIdToUpdate) {
+    updateClientCount(roomIdToUpdate);
+  }
+
   console.log(`Client disconnected: ${socket.id}`);
 });
 });
 };
+// socket.on('disconnect', () => {
+//   roomParticipants.forEach((room, roomId) => {
+//     if (room.mentor === socket.id) {
+//       room.mentor = null; // Remove the mentor if the disconnected socket was the mentor
+//       io.in(roomId).emit('mentorLeft'); // Notify all students that the mentor left
+//       room.students.forEach(studentId => {
+//         io.sockets.sockets.get(studentId)?.leave(roomId);
+//       });
+//       roomParticipants.delete(roomId); // Delete the room if it has no participants
+//     } else {
+//       room.students.delete(socket.id); // Remove the student
+//     }
+// });
+
+//   if (roomIdToUpdate) {
+//     updateClientCount(roomIdToUpdate);
+//   }
+//   console.log(`Client disconnected: ${socket.id}`);
+// });
+// });
+// };

@@ -136,3 +136,15 @@ export const listenForRedirectLobby = (callback) => {
     callback();
   });
 };
+
+// Listens for client count updates
+export const listenForClientCount = (callback) => {
+  if (!socketConnection) {
+    console.warn('Socket connection not established');
+    return;
+  }
+  socketConnection.on('clientCount', (count) => {
+    console.log('Received client count update:', count);
+    callback(count);
+  });
+};

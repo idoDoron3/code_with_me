@@ -1,0 +1,15 @@
+.success-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    font-size: 2em;
+  }
+  
+  .smiley-face {
+    font-size: 5em;
+    margin-bottom: 20px;
+  }
+  
