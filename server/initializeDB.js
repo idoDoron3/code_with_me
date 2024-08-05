@@ -6,96 +6,91 @@ require('dotenv').config();
 
 const codeBlocks = [
   {
-    title: 'Async/Await Example',
-    content: `async function fetchUserData() {
-  // Complete here: Fetch user data from the API
-  const response = await fetch(''); // Add API URL
-  const data = await response.json();
-  console.log(data);
-}
-
-// Complete here: Call the function
-fetchUserData();
-`,
-    solution: `async function fetchUserData() {
-  try {
-    const response = await fetch('https://api.example.com/user');
-    const data = await response.json();
-    console.log(data);
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-  }
-}
-
-fetchUserData();
-`
+    title: 'Async Case',
+    content: `
+      // Task: Complete the async function to fetch data from an API.
+      async function fetchData() {
+        // Complete the code here
+      }
+      
+      fetchData().then(data => console.log(data)).catch(error => console.error(error));
+    `,
+    solution: `
+      async function fetchData() {
+        const response = await fetch('https://api.example.com/data');
+        return response.json();
+      }
+      
+      fetchData().then(data => console.log(data)).catch(error => console.error(error));
+    `
   },
   {
-    title: 'Synchronous Loop Example',
-    content: `for (let i = 1; i <= 5; i++) {
-  // Complete here: Print each number
-  console.log(); // Add the variable to print
-}
-`,
-    solution: `for (let i = 1; i <= 5; i++) {
-  console.log(i);
-}
-`
+    title: 'Sync Case',
+    content: `
+      // Task: Complete the function to calculate the sum of an array synchronously.
+      function calculateSum(arr) {
+        // Complete the code here
+      }
+      
+      const numbers = [1, 2, 3, 4, 5];
+      console.log(calculateSum(numbers));
+    `,
+    solution: `
+      function calculateSum(arr) {
+        return arr.reduce((sum, num) => sum + num, 0);
+      }
+      
+      const numbers = [1, 2, 3, 4, 5];
+      console.log(calculateSum(numbers));
+    `
   },
   {
-    title: 'Promise Example',
-    content: `const myPromise = new Promise((resolve, reject) => {
-  // Complete here: Determine success or failure
-  const success = ; // Set to true or false
-  if (success) {
-    resolve('Operation was successful');
-  } else {
-    reject('Operation failed');
-  }
-});
-
-// Complete here: Handle the promise
-myPromise.then(result => {
-  console.log(result);
-}).catch(error => {
-  console.error(error);
-});
-`,
-    solution: `const myPromise = new Promise((resolve, reject) => {
-  const success = true;
-  if (success) {
-    resolve('Operation was successful');
-  } else {
-    reject('Operation failed');
-  }
-});
-
-myPromise.then(result => {
-  console.log(result);
-}).catch(error => {
-  console.error(error);
-});
-`
+    title: 'Promise Case',
+    content: `
+      // Task: Complete the function to return a promise that resolves with a greeting message.
+      function getGreeting(name) {
+        // Complete the code here
+      }
+      
+      getGreeting('John').then(message => console.log(message)).catch(error => console.error(error));
+    `,
+    solution: `
+      function getGreeting(name) {
+        return new Promise((resolve, reject) => {
+          if (name) {
+            resolve('Hello, ' + name + '!');
+          } else {
+            reject('Name is required.');
+          }
+        });
+      }
+      
+      getGreeting('John').then(message => console.log(message)).catch(error => console.error(error));
+    `
   },
   {
-    title: 'Event Loop Example',
-    content: `console.log('Start');
-
-// Complete here: Schedule a delayed operation
-setTimeout(() => {
-  console.log('Timeout');
-}, ); // Add delay in milliseconds
-
-console.log('End');
-`,
-    solution: `console.log('Start');
-
-setTimeout(() => {
-  console.log('Timeout');
-}, 1000);
-
-console.log('End');
-`
+    title: 'Event Loop Case',
+    content: `
+      // Task: Complete the code to demonstrate the event loop in JavaScript.
+      console.log('Start');
+      
+      setTimeout(() => {
+        console.log('Timeout');
+        // Complete the code here
+      }, 0);
+      
+      console.log('End');
+    `,
+    solution: `
+      console.log('Start');
+      
+      setTimeout(() => {
+        console.log('Timeout');
+        console.log('More work');
+      }, 0);
+      
+      console.log('End');
+    `
   }
 ];
 

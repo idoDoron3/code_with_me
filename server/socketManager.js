@@ -64,28 +64,44 @@ module.exports = (io) => {
       
     //   }
     // });
+
     socket.on('changeCode', async ({ roomId, newCode, isSubmit }) => {
       const room = roomParticipants.get(roomId);
-      if (room && room.students.has(socket.id)) {
-        socket.to(roomId).emit('codeUpdated', newCode);
+      if (room && room.students.has(socket.id)) { // Ensure only students can update the code
+        socket.to(roomId).emit('codeUpdated', newCode); // Broadcast to all clients except the sender
         if (isSubmit) {
           try {
             const codeBlock = await CodeBlock.findById(roomId);
-            if (codeBlock && newCode.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '').trim() === codeBlock.solution.trim()) {
+
+            const cleanCode = (code) => {
+              return code.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '') // Remove comments
+                .replace(/\s+/g, '') // Remove all whitespace (spaces, tabs, newlines)
+                .trim();
+            };
+
+            const cleanedNewCode = cleanCode(newCode);
+            const cleanedSolution = cleanCode(codeBlock.solution);
+
+            console.log('Cleaned New Code:', cleanedNewCode);
+            console.log('Cleaned Solution:', cleanedSolution);
+
+
+            if (cleanedNewCode === cleanedSolution) {
               io.to(roomId).emit('solutionMatched');
               setTimeout(() => {
                 io.to(roomId).emit('redirectLobby');
                 roomParticipants.delete(roomId);
-              }, 3000);
+              }, 3000); // 3 seconds delay before redirect
             } else {
-              socket.emit('solutionIncorrect'); // Inform the student that the solution is incorrect
+              socket.emit('solutionFailed');
             }
           } catch (error) {
-            console.error('Failed to update code block:', error);
+            console.error('Failed to check solution:', error);
           }
         }
       }
     });
+    
 
 
 
