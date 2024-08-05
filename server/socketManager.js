@@ -38,7 +38,7 @@ module.exports = (io) => {
       try {
         const codeBlock = await CodeBlock.findById(roomId);
         if (codeBlock) {
-          socket.emit('initialCode', codeBlock.code);
+          socket.emit('initialCode', codeBlock.content);
         }
       } catch (error) {
         console.error('Failed to load code block:', error);

@@ -129,6 +129,19 @@ export const initializeSocket = (roomId) => {
     socketConnection.on('disconnect', (reason) => {
       console.log('WebSocket disconnected:', socketConnection.id, 'Reason:', reason);
     });
+
+    //////
+    // Listen for initial code from the server
+    socketConnection.on('initialCode', (initialCode) => {
+      if (typeof initialCode === 'string') {
+        console.log('Received initial code:', initialCode);
+        // setCode(initialCode); // Ensure the code is set correctly
+
+      } else {
+        console.error('Received initial code is not a string:', initialCode);
+      }
+    });
+    /////////
   }
 };
 
