@@ -21,19 +21,19 @@ All code blocks are saved in MongoDB.
 ## Client-Side Details
 - The lobby page displays a list of the titles of each code block with a link to see the code.
 
-![Lobby Page](./server/images/screenshot1.png)
+![Lobby Page](./client/src/assets/images/screenshot1.png)
 
 - The first user to enter the code block will be set as a mentor and can watch without editing options.
 
-![Mentor View](./server/images/screenshot2.png)
+![Mentor View](./client/src/assets/images/screenshot2.png)
 
 - When other users log in, they will be defined as students and will be able to edit the code.
 
-![Student View](./server/images/screenshot3.png)
+![Student View](./client/src/assets/images/screenshot3.png)
 
 **Notice!** Changing the code does not save it in the database!
 
 ### Nice Feature
 When a user edits the code to the desired form and presses submit, a smiley face will appear to reward their work.
 
-![Smiley Face](./server/images/screenshot4.png)
+![Smiley Face](./client/src/assets/images/screenshot4.png)
